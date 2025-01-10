@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="../../extras/jquery.min.1.7.js"></script>
     <script type="text/javascript" src="../../extras/jquery-ui-1.8.20.custom.min.js"></script>
     <script type="text/javascript" src="../../extras/jquery.mousewheel.min.js"></script>
@@ -8,6 +10,8 @@
     <script type="text/javascript" src="../../lib/hash.js"></script>
     <style>
         body {
+            background-color: #ffffff;
+            color: #000000;
             background-image: url('pics/newsletter_bg.jpg');
             background-size: cover;
             background-position: center;
@@ -16,6 +20,8 @@
             padding: 0;
             overflow: hidden;
             position: relative;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.5s, color 0.5s;
         }
 
         .overlay {
@@ -24,7 +30,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgb(255, 255, 255);
+            background-color: rgba(255, 255, 255, 0.8);
             z-index: 1;
             pointer-events: none;
         }
@@ -32,321 +38,334 @@
         #canvas {
             position: relative;
             z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .instructions {
+        .controls {
             position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 240px;
-            padding: 20px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(40, 40, 40, 0.9));
-            color: #664949;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 3;
-            text-align: center;
-        }
-
-        .instructions h3 {
-            margin-top: 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffcc00;
-        }
-
-        .instructions ul {
-            padding: 0;
-            margin: 10px 0 0 0;
-            list-style-type: none;
-        }
-
-        .instructions ul li {
-            margin-bottom: 12px;
-        }
-
-        .instructions ul li:before {
-            content: "✔ ";
-            color: #ffcc00;
-            margin-right: 5px;
-        }
-
-        .navigation-buttons {
-            position: fixed;
-            bottom: -10px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 5;
+            display: flex;
+            gap: 10px;
+            z-index: 3;
         }
 
-        .navigation-buttons button {
-            background-color: #4CAF50;
-            color: rgb(255, 247, 247);
+        .controls button {
+            width: 50px;
+            height: 50px;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 20px;
+            border-radius: 50%;
             cursor: pointer;
-            margin: 0 10px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, transform 0.2s;
         }
 
-        .navigation-buttons button:hover {
-            background-color: #5c945f;
+        .controls button:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            #canvas {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .controls button {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
-<body class="hidden">
-<div class="overlay"></div>
+<body>
+    <div class="overlay"></div>
 
-<!-- تعليمات المستخدم -->
-<!-- <div class="instructions"> -->
-    <h3>دليل الاستخدام</h3>
-    <ul>
-        <li>اضغط على السهم الأيمن للانتقال للصفحة التالية.</li>
-        <li>اضغط على السهم الأيسر للرجوع للصفحة السابقة.</li>
-        <li>استخدم الماوس لتكبير أو تصغير العرض أثناء القراءة.</li>
-        <li>يمكنك قلب الصفحات مباشرة بالنقر عليها بالماوس.</li>
-        <li>حرك الشريط السفلي للانتقال بين الصفحات بسرعة.</li>
-    </ul>
-</div>
-
-<div id="canvas">
-    <div id="book-zoom">
-        <div class="sj-book">
-            <div depth="5" class="hard"> <div class="side"></div> </div>
-            <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
-            <div class="own-size"></div>
-            <div class="own-size even"></div>
-            <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
-            <div class="hard p19"></div>
+    <div id="canvas">
+        <div id="book-zoom">
+            <div class="sj-book">
+                <div depth="5" class="hard"> <div class="side"></div> </div>
+                <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
+                <div class="own-size"></div>
+                <div class="own-size even"></div>
+                <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
+                <div class="hard p18"></div>
+            </div>
+        </div>
+        <div id="slider-bar" class="turnjs-slider">
+            <div id="slider"></div>
         </div>
     </div>
-    <div id="slider-bar" class="turnjs-slide">
-        <div id="slider"></div>
+
+    <div class="controls">
+        <button id="prev-page">&#9664;</button>
+        <button id="next-page">&#9654;</button>
+        <button id="zoom-in">&#43;</button>
+        <button id="zoom-out">&#8722;</button>
+        <button id="toggle-theme">&#9788;</button>
+        <button id="toggle-view">&#128065;</button>
     </div>
-</div>
 
-<!-- أزرار التنقل -->
-<div class="navigation-buttons">
-    <button id="prevBtn">السابق</button>
-    <button id="nextBtn">التالي</button>
-</div>
+    <script type="text/javascript">
+        let zoomLevel = 1;
+        let singlePageView = false;
 
-<script type="text/javascript">
-    function loadApp() {
-        var flipbook = $('.sj-book');
-
-        if (flipbook.width() == 0 || flipbook.height() == 0) {
-            setTimeout(loadApp, 10);
-            return;
-        }
-
-        $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
-            var data = $(this).data(),
-                step = 30,
-                flipbook = $('.sj-book'),
-                actualPos = $('#slider').slider('value') * step;
-
-            if (typeof (data.scrollX) === 'undefined') {
-                data.scrollX = actualPos;
-                data.scrollPage = flipbook.turn('page');
-            }
-
-            data.scrollX = Math.min($("#slider").slider('option', 'max') * step,
-                Math.max(0, data.scrollX + deltaX));
-
-            var actualView = Math.round(data.scrollX / step),
-                page = Math.min(flipbook.turn('pages'), Math.max(1, actualView * 2 - 2));
-
-            if ($.inArray(data.scrollPage, flipbook.turn('view', page)) == -1) {
-                data.scrollPage = page;
-                flipbook.turn('page', page);
-            }
-
-            if (data.scrollTimer)
-                clearInterval(data.scrollTimer);
-
-            data.scrollTimer = setTimeout(function () {
-                data.scrollX = undefined;
-                data.scrollPage = undefined;
-                data.scrollTimer = undefined;
-            }, 1000);
+        document.getElementById('prev-page').addEventListener('click', function () {
+            $('.sj-book').turn('previous');
         });
 
-        $("#slider").slider({
-            min: 1,
-            max: 100,
+        document.getElementById('next-page').addEventListener('click', function () {
+            $('.sj-book').turn('next');
+        });
 
-            start: function (event, ui) {
-                if (!window._thumbPreview) {
-                    _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
-                    setPreview(ui.value);
-                    _thumbPreview.appendTo($(ui.handle));
-                } else
-                    setPreview(ui.value);
+        document.getElementById('zoom-in').addEventListener('click', function () {
+            zoomLevel = Math.min(zoomLevel + 0.1, 2);
+            document.getElementById('canvas').style.transform = `scale(${zoomLevel})`;
+        });
 
-                moveBar(false);
-            },
+        document.getElementById('zoom-out').addEventListener('click', function () {
+            zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+            document.getElementById('canvas').style.transform = `scale(${zoomLevel})`;
+        });
 
-            slide: function (event, ui) {
-                setPreview(ui.value);
-            },
+        document.getElementById('toggle-theme').addEventListener('click', function () {
+            const body = document.body;
+            const isDark = body.style.backgroundColor === 'rgb(0, 0, 0)';
 
-            stop: function () {
-                if (window._thumbPreview)
-                    _thumbPreview.removeClass('show');
-
-                $('.sj-book').turn('page', Math.max(1, $(this).slider('value') * 2 - 2));
+            if (isDark) {
+                body.style.backgroundColor = '#ffffff';
+                body.style.color = '#000000';
+            } else {
+                body.style.backgroundColor = '#000000';
+                body.style.color = '#ffffff';
             }
         });
 
-        Hash.on('^page\/([0-9]*)$', {
-            yep: function (path, parts) {
-                var page = parts[1];
+        document.getElementById('toggle-view').addEventListener('click', function () {
+            const flipbook = $('.sj-book');
+            if (!singlePageView) {
+                flipbook.turn('display', 'single');
+                singlePageView = true;
+            } else {
+                flipbook.turn('display', 'double');
+                singlePageView = false;
+            }
+        });
 
-                if (page !== undefined) {
-                    if ($('.sj-book').turn('is'))
-                        $('.sj-book').turn('page', page);
+        function loadApp() {
+            var flipbook = $('.sj-book');
+
+            if (flipbook.width() == 0 || flipbook.height() == 0) {
+                setTimeout(loadApp, 10);
+                return;
+            }
+
+            $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
+                var data = $(this).data(),
+                    step = 30,
+                    flipbook = $('.sj-book'),
+                    actualPos = $('#slider').slider('value') * step;
+
+                if (typeof (data.scrollX) === 'undefined') {
+                    data.scrollX = actualPos;
+                    data.scrollPage = flipbook.turn('page');
                 }
 
-            },
-            nop: function (path) {
-                if ($('.sj-book').turn('is'))
-                    $('.sj-book').turn('page', 1);
-            }
-        });
+                data.scrollX = Math.min($("#slider").slider('option', 'max') * step,
+                    Math.max(0, data.scrollX + deltaX));
 
-        $(document).keydown(function (e) {
-            var previous = 37, next = 39;
+                var actualView = Math.round(data.scrollX / step),
+                    page = Math.min(flipbook.turn('pages'), Math.max(1, actualView * 2 - 2));
 
-            switch (e.keyCode) {
-                case previous:
-                    $('.sj-book').turn('previous');
-                    break;
-                case next:
-                    $('.sj-book').turn('next');
-                    break;
-            }
-        });
+                if ($.inArray(data.scrollPage, flipbook.turn('view', page)) == -1) {
+                    data.scrollPage = page;
+                    flipbook.turn('page', page);
+                }
 
-        flipbook.bind(($.isTouch) ? 'touchend' : 'click', zoomHandle);
+                if (data.scrollTimer)
+                    clearInterval(data.scrollTimer);
 
-        flipbook.turn({
-            elevation: 50,
-            acceleration: !isChrome(),
-            autoCenter: true,
-            gradients: true,
-            duration: 1000,
-            pages: 18,
-            when: {
-                turning: function (e, page, view) {
-                    var book = $(this),
-                        currentPage = book.turn('page'),
-                        pages = book.turn('pages');
+                data.scrollTimer = setTimeout(function () {
+                    data.scrollX = undefined;
+                    data.scrollPage = undefined;
+                    data.scrollTimer = undefined;
+                }, 1000);
 
-                    if (currentPage > 3 && currentPage < pages - 3) {
-                        if (page == 1) {
-                            book.turn('page', 2).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        } else if (page == pages) {
-                            book.turn('page', pages - 1).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        }
-                    } else if (page > 3 && page < pages - 3) {
-                        if (currentPage == 1) {
-                            book.turn('page', 2).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        } else if (currentPage == pages) {
-                            book.turn('page', pages - 1).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        }
-                    }
+            });
 
-                    updateDepth(book, page);
+            $("#slider").slider({
+                min: 1,
+                max: 100,
 
-                    if (page >= 2)
-                        $('.sj-book .p2').addClass('fixed');
-                    else
-                        $('.sj-book .p2').removeClass('fixed');
-
-                    if (page < book.turn('pages'))
-                        $('.sj-book .p17').addClass('fixed');
-                    else
-                        $('.sj-book .p17').removeClass('fixed');
-
-                    Hash.go('page/' + page).update();
-                },
-
-                turned: function (e, page, view) {
-                    var book = $(this);
-
-                    if (page == 2 || page == 3) {
-                        book.turn('peel', 'br');
-                    }
-
-                    updateDepth(book);
-
-                    $('#slider').slider('value', getViewNumber(book, page));
-
-                    book.turn('center');
-                },
-
-                start: function (e, pageObj) {
-                    moveBar(true);
-                },
-
-                end: function (e, pageObj) {
-                    var book = $(this);
-
-                    updateDepth(book);
-
-                    setTimeout(function () {
-                        $('#slider').slider('value', getViewNumber(book));
-                    }, 1);
+                start: function (event, ui) {
+                    if (!window._thumbPreview) {
+                        _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
+                        setPreview(ui.value);
+                        _thumbPreview.appendTo($(ui.handle));
+                    } else
+                        setPreview(ui.value);
 
                     moveBar(false);
                 },
 
-                missing: function (e, pages) {
-                    for (var i = 0; i < pages.length; i++) {
-                        addPage(pages[i], $(this));
+                slide: function (event, ui) {
+                    setPreview(ui.value);
+                },
+
+                stop: function () {
+                    if (window._thumbPreview)
+                        _thumbPreview.removeClass('show');
+
+                    $('.sj-book').turn('page', Math.max(1, $(this).slider('value') * 2 - 2));
+                }
+            });
+
+            Hash.on('^page\/([0-9]*)$', {
+                yep: function (path, parts) {
+                    var page = parts[1];
+
+                    if (page !== undefined) {
+                        if ($('.sj-book').turn('is'))
+                            $('.sj-book').turn('page', page);
+                    }
+
+                },
+                nop: function (path) {
+                    if ($('.sj-book').turn('is'))
+                        $('.sj-book').turn('page', 1);
+                }
+            });
+
+            $(document).keydown(function (e) {
+                var previous = 37, next = 39;
+
+                switch (e.keyCode) {
+                    case previous:
+                        $('.sj-book').turn('previous');
+                        break;
+                    case next:
+                        $('.sj-book').turn('next');
+                        break;
+                }
+            });
+
+            flipbook.bind(($.isTouch) ? 'touchend' : 'click', zoomHandle);
+
+            flipbook.turn({
+                elevation: 50,
+                acceleration: !isChrome(),
+                autoCenter: true,
+                gradients: true,
+                duration: 1000,
+                pages: 18,
+                when: {
+                    turning: function (e, page, view) {
+                        var book = $(this),
+                            currentPage = book.turn('page'),
+                            pages = book.turn('pages');
+
+                        if (currentPage > 3 && currentPage < pages - 3) {
+                            if (page == 1) {
+                                book.turn('page', 2).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            } else if (page == pages) {
+                                book.turn('page', pages - 1).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            }
+                        } else if (page > 3 && page < pages - 3) {
+                            if (currentPage == 1) {
+                                book.turn('page', 2).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            } else if (currentPage == pages) {
+                                book.turn('page', pages - 1).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            }
+                        }
+
+                        updateDepth(book, page);
+
+                        if (page >= 2)
+                            $('.sj-book .p2').addClass('fixed');
+                        else
+                            $('.sj-book .p2').removeClass('fixed');
+
+                        if (page < book.turn('pages'))
+                            $('.sj-book .p17').addClass('fixed');
+                        else
+                            $('.sj-book .p17').removeClass('fixed');
+
+                        Hash.go('page/' + page).update();
+                    },
+
+                    turned: function (e, page, view) {
+                        var book = $(this);
+
+                        if (page == 2 || page == 3) {
+                            book.turn('peel', 'br');
+                        }
+
+                        updateDepth(book);
+
+                        $('#slider').slider('value', getViewNumber(book, page));
+
+                        book.turn('center');
+                    },
+
+                    start: function (e, pageObj) {
+                        moveBar(true);
+                    },
+
+                    end: function (e, pageObj) {
+                        var book = $(this);
+
+                        updateDepth(book);
+
+                        setTimeout(function () {
+                            $('#slider').slider('value', getViewNumber(book));
+                        }, 1);
+
+                        moveBar(false);
+                    },
+
+                    missing: function (e, pages) {
+                        for (var i = 0; i < pages.length; i++) {
+                            addPage(pages[i], $(this));
+                        }
                     }
                 }
-            }
+            });
+
+            $('#slider').slider('option', 'max', numberOfViews(flipbook));
+            flipbook.addClass('animated');
+            $('#canvas').css({ visibility: '' });
+        }
+
+        $('#canvas').css({ visibility: 'hidden' });
+
+        yepnope({
+            test: Modernizr.csstransforms,
+            yep: ['../../lib/turn.min.js'],
+            nope: ['../../lib/turn.html4.min.js', 'css/jquery.ui.html4.css', 'css/steve-jobs-html4.css'],
+            both: ['js/steve-jobs.js', 'css/jquery.ui.css', 'css/steve-jobs.css'],
+            complete: loadApp
         });
 
-        $('#slider').slider('option', 'max', numberOfViews(flipbook));
-        flipbook.addClass('animated');
-        $('#canvas').css({ visibility: '' });
-
-        // ربط الأزرار بوظائف التنقل
-        $('#prevBtn').click(function() {
-            $('.sj-book').turn('previous');
-        });
-
-        $('#nextBtn').click(function() {
-            $('.sj-book').turn('next');
-        });
-    }
-
-    $('#canvas').css({ visibility: 'hidden' });
-
-    yepnope({
-        test: Modernizr.csstransforms,
-        yep: ['../../lib/turn.min.js'],
-        nope: ['../../lib/turn.html4.min.js', 'css/jquery.ui.html4.css', 'css/steve-jobs-html4.css'],
-        both: ['js/steve-jobs.js', 'css/jquery.ui.css', 'css/steve-jobs.css'],
-        complete: loadApp
-    });
-</script>
-
+    </script>
 </body>
 </html>
