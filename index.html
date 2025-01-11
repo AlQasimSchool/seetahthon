@@ -30,7 +30,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: #ffffffcc;
             z-index: 1;
             pointer-events: none;
         }
@@ -45,6 +45,8 @@
             align-items: center;
             flex-wrap: wrap;
             box-sizing: border-box;
+            transition: transform 0.3s ease;
+            user-select: none;
         }
 
         .controls {
@@ -62,7 +64,7 @@
             height: 50px;
             border: none;
             background-color: #007bff;
-            color: #fff;
+            color: #ffffff;
             font-size: 20px;
             border-radius: 50%;
             cursor: pointer;
@@ -119,7 +121,7 @@
 
     <div id="canvas">
         <div id="book-zoom">
-            <div class="sj-book">
+            <div class="sj-book" dir="rtl">
                 <div depth="5" class="hard"> <div class="side"></div> </div>
                 <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
                 <div class="own-size"></div>
@@ -139,19 +141,30 @@
         <button id="zoom-in">&#43;</button>
         <button id="zoom-out">&#8722;</button>
         <button id="toggle-theme">&#9788;</button>
-        <button id="toggle-view">&#128065;</button>
+        <button id="toggle-view" style="display:none;">&#128065;</button>
     </div>
 
     <script type="text/javascript">
         let zoomLevel = 1;
         let singlePageView = false;
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        // إظهار زر العين بعد الصفحة الثانية
+        function showEyeButton(page) {
+            if (page > 2) {
+                document.getElementById('toggle-view').style.display = 'block'; // إظهار زر العين بعد الصفحة الثانية
+            } else {
+                document.getElementById('toggle-view').style.display = 'none'; // إخفاء زر العين قبل الصفحة الثانية
+            }
+        }
 
         document.getElementById('prev-page').addEventListener('click', function () {
-            $('.sj-book').turn('previous');
+            $('.sj-book').turn('next'); // Adjust for RTL
         });
 
         document.getElementById('next-page').addEventListener('click', function () {
-            $('.sj-book').turn('next');
+            $('.sj-book').turn('previous'); // Adjust for RTL
         });
 
         document.getElementById('zoom-in').addEventListener('click', function () {
@@ -179,14 +192,44 @@
 
         document.getElementById('toggle-view').addEventListener('click', function () {
             const flipbook = $('.sj-book');
-            if (!singlePageView) {
-                flipbook.turn('display', 'single');
-                singlePageView = true;
-            } else {
-                flipbook.turn('display', 'double');
-                singlePageView = false;
-            }
+            flipbook.turn('page', 4);  // الانتقال إلى صفحة معينة داخل الكتاب عند الضغط على زر العين
+
+            // تكبير الصفحة لتتناسب مع مقاسات الأجهزة
+            document.getElementById('canvas').style.transform = 'scale(1.5)';
+            enableDragging(); // تمكين السحب عند الضغط على زر العين
         });
+
+        // تفعيل السحب عند الضغط على زر العين
+        function enableDragging() {
+            document.getElementById('canvas').addEventListener('mousedown', startDrag);
+            document.getElementById('canvas').addEventListener('touchstart', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function startDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.pageX || e.touches[0].pageX;
+            startY = e.pageY || e.touches[0].pageY;
+            initialX = document.getElementById('canvas').scrollLeft;
+            initialY = document.getElementById('canvas').scrollTop;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                const dx = (e.pageX || e.touches[0].pageX) - startX;
+                const dy = (e.pageY || e.touches[0].pageY) - startY;
+                document.getElementById('canvas').scrollLeft = initialX - dx;
+                document.getElementById('canvas').scrollTop = initialY - dy;
+            }
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
 
         function loadApp() {
             var flipbook = $('.sj-book');
@@ -277,10 +320,10 @@
 
                 switch (e.keyCode) {
                     case previous:
-                        $('.sj-book').turn('previous');
+                        $('.sj-book').turn('next'); // Adjust for RTL
                         break;
                     case next:
-                        $('.sj-book').turn('next');
+                        $('.sj-book').turn('previous'); // Adjust for RTL
                         break;
                 }
             });
@@ -294,11 +337,14 @@
                 gradients: true,
                 duration: 1000,
                 pages: 18,
+                direction: 'rtl', // Right-to-Left direction
                 when: {
                     turning: function (e, page, view) {
                         var book = $(this),
                             currentPage = book.turn('page'),
                             pages = book.turn('pages');
+
+                        showEyeButton(page);  // إظهار زر العين بعد الصفحة الثانية
 
                         if (currentPage > 3 && currentPage < pages - 3) {
                             if (page == 1) {
@@ -341,7 +387,7 @@
                         var book = $(this);
 
                         if (page == 2 || page == 3) {
-                            book.turn('peel', 'br');
+                            book.turn('peel', 'bl'); // Adjust for RTL
                         }
 
                         updateDepth(book);
