@@ -1,154 +1,135 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="../../extras/jquery.min.1.7.js"></script>
     <script type="text/javascript" src="../../extras/jquery-ui-1.8.20.custom.min.js"></script>
     <script type="text/javascript" src="../../extras/jquery.mousewheel.min.js"></script>
     <script type="text/javascript" src="../../extras/modernizr.2.5.3.min.js"></script>
     <script type="text/javascript" src="../../lib/hash.js"></script>
     <style>
-        body {
+        /* التأكد من تطبيق التغييرات على الصفحة بالكامل */
+        html, body {
             margin: 0;
             padding: 0;
-            background-color: white;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease; /* التأثير السلس للتبديل بين الألوان */
+            color: #000;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
             background-image: url('pics/newsletter_bg.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            transition: background-color 0.5s ease;
+            direction: rtl; /* فتح الكتاب من اليمين لليسار */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgb(255, 255, 255);
+            z-index: 1;
+            pointer-events: none;
         }
 
         #canvas {
             position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: -20px;
+            z-index: 2;
         }
 
-        .sj-book {
-            max-width: 100%;
-            max-height: 100%;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .controls {
+        .navigation-buttons {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
+            z-index: 5;
         }
 
-        .controls button {
-            width: 50px;
-            height: 50px;
+        .navigation-buttons button {
+            background-color: rgba(0, 0, 255, 0.7); /* اللون الأزرق */
+            color: transparent;
             border: none;
+            padding: 15px;
+            margin: 5px;
             border-radius: 50%;
-            background-color: #333;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
+            font-size: 20px;
         }
 
-        .controls button:hover {
-            background-color: #555;
+        .navigation-buttons button:hover {
+            background-color: rgba(0, 0, 255, 0.9); /* التفاعل مع زر التبديل */
         }
 
-        iframe {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 640px;
-            height: 480px;
-            border: none;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        .dark-theme {
+            background-color: #121212 !important;
+            color: white !important;
         }
 
-        iframe.active {
-            display: block;
+        .dark-theme .sj-book {
+            background-color: #333 !important;
+            color: white !important;
         }
 
-        .eye-button {
-            display: none;
+        .dark-theme .navigation-buttons button {
+            background-color: rgba(255, 255, 255, 0.7) !important;
+            color: black !important;
+        }
+
+        .zoom-controls {
             position: fixed;
             top: 50%;
             right: 20px;
+            z-index: 5;
             transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            font-size: 24px;
+        }
+
+        .zoom-controls button {
+            background-color: rgba(0, 0, 255, 0.7); /* الأزرق */
+            color: transparent;
+            border: none;
+            padding: 15px;
+            margin: 5px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
-            z-index: 10;
+            font-size: 20px;
+            display: block; /* ترتيب عمودي */
         }
 
-        .eye-button:hover {
-            background-color: rgba(0, 0, 0, 0.8);
+        .zoom-controls button:hover {
+            background-color: rgba(0, 0, 255, 0.9);
         }
 
-        .instructions {
-            position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 240px;
-            padding: 20px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(40, 40, 40, 0.9));
-            color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 3;
-            text-align: center;
+        /* إضافة أيقونات لتغيير اللون والتكبير والتصغير */
+        .icon-dark-mode::before {
+            content: "🌙"; /* رمز للقمر (للوضع الداكن) */
+            font-size: 20px;
+            color: white; /* تغيير لون الأيقونة إلى الأبيض */
         }
 
-        .instructions h3 {
-            margin-top: 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffcc00;
+        .icon-zoom-in::before {
+            content: "+"; /* رمز الزائد للتقريب */
+            font-size: 20px;
+            color: white; /* تغيير لون الأيقونة إلى الأبيض */
         }
 
-        .instructions ul {
-            padding: 0;
-            margin: 10px 0 0 0;
-            list-style-type: none;
-        }
-
-        .instructions ul li {
-            margin-bottom: 12px;
-        }
-
-        .instructions ul li:before {
-            content: "✔ ";
-            color: #ffcc00;
-            margin-right: 5px;
+        .icon-zoom-out::before {
+            content: "-"; /* رمز الناقص للتبعيد */
+            font-size: 20px;
+            color: white; /* تغيير لون الأيقونة إلى الأبيض */
         }
     </style>
 </head>
-<body>
+<body class="hidden">
+    <div class="overlay"></div>
+
     <div id="canvas">
         <div id="book-zoom">
-            <div class="sj-book" style="direction: rtl;">
+            <div class="sj-book">
                 <div depth="5" class="hard"> <div class="side"></div> </div>
                 <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
                 <div class="own-size"></div>
@@ -157,24 +138,25 @@
                 <div class="hard p18"></div>
             </div>
         </div>
+        <div id="slider-bar" class="turnjs-slider">
+            <div id="slider"></div>
+        </div>
     </div>
 
-    <div class="controls">
-        <button id="prev-page">&#x25C0;</button>
-        <button id="next-page">&#x25B6;</button>
-        <button id="zoom-in">+</button>
-        <button id="zoom-out">-</button>
-        <button id="toggle-theme">&#x1F4A7;</button>
-        <button id="single-page">&#x1F441;</button>
-        <button id="toggle-form">تقييم</button>
+    <!-- أزرار التنقل -->
+    <div class="navigation-buttons">
+        <button id="prevPage">◀</button>
+        <button id="nextPage">▶</button>
+        <button id="toggleTheme" class="icon-dark-mode"></button>
     </div>
 
-    <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
+    <!-- أزرار التكبير والتصغير بشكل عمودي -->
+    <div class="zoom-controls">
+        <button id="zoomIn" class="icon-zoom-in"></button>
+        <button id="zoomOut" class="icon-zoom-out"></button>
+    </div>
 
-    <div class="eye-button" id="eye-button">&#128065;</div>
-
-    <script>
-        // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
+    <script type="text/javascript">
         function loadApp() {
             var flipbook = $('.sj-book');
 
@@ -219,6 +201,7 @@
             $("#slider").slider({
                 min: 1,
                 max: 100,
+
                 start: function (event, ui) {
                     if (!window._thumbPreview) {
                         _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
@@ -280,7 +263,7 @@
                 gradients: true,
                 duration: 1000,
                 pages: 18,
-                direction: 'rtl',
+                rtl: true, /* جعل الكتاب يفتح من اليمين لليسار */
                 when: {
                     turning: function (e, page, view) {
                         var book = $(this),
@@ -322,16 +305,6 @@
                             $('.sj-book .p17').removeClass('fixed');
 
                         Hash.go('page/' + page).update();
-
-                        // إظهار / إخفاء زر العين بناءً على الصفحة
-                        const eyeButton = document.getElementById('eye-button');
-                        if ([1, 2, 8, 9].includes(page)) {
-                            eyeButton.style.display = 'none';
-                        } else if (page > 3 && page < 8) {
-                            eyeButton.style.display = 'flex';
-                        } else {
-                            eyeButton.style.display = 'none';
-                        }
                     },
 
                     turned: function (e, page, view) {
@@ -343,11 +316,25 @@
 
                         updateDepth(book);
 
-                        setTimeout(function () {
-                            $('#slider').slider('value', getViewNumber(book, page));
-                        }, 1);
+                        $('#slider').slider('value', getViewNumber(book, page));
 
                         book.turn('center');
+                    },
+
+                    start: function (e, pageObj) {
+                        moveBar(true);
+                    },
+
+                    end: function (e, pageObj) {
+                        var book = $(this);
+
+                        updateDepth(book);
+
+                        setTimeout(function () {
+                            $('#slider').slider('value', getViewNumber(book));
+                        }, 1);
+
+                        moveBar(false);
                     },
 
                     missing: function (e, pages) {
@@ -373,37 +360,34 @@
             complete: loadApp
         });
 
-        document.getElementById('toggle-theme').addEventListener('click', function () {
-            document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
-        });
+        // أزرار التنقل
+        $(document).ready(function() {
+            $('#prevPage').click(function() {
+                $('.sj-book').turn('previous');
+            });
 
-        document.getElementById('toggle-form').addEventListener('click', function () {
-            const form = document.getElementById('feedback-form');
-            form.classList.toggle('active');
-        });
+            $('#nextPage').click(function() {
+                $('.sj-book').turn('next');
+            });
 
-        document.getElementById('zoom-in').addEventListener('click', function () {
-            const book = document.querySelector('.sj-book');
-            book.style.transform = 'scale(1.2)';
-        });
+            $('#toggleTheme').click(function() {
+                $('body').toggleClass('dark-theme');
+                $('html').toggleClass('dark-theme');
+                $('.sj-book').toggleClass('dark-theme');
+            });
 
-        document.getElementById('zoom-out').addEventListener('click', function () {
-            const book = document.querySelector('.sj-book');
-            book.style.transform = 'scale(1)';
-        });
+            // إضافة أزرار التكبير والتصغير
+            $('#zoomIn').click(function() {
+                var currentZoom = $('#canvas').css('transform');
+                var zoomFactor = parseFloat(currentZoom.split(',')[0].replace('matrix(', ''));
+                $('#canvas').css('transform', 'scale(' + (zoomFactor + 0.1) + ')');
+            });
 
-        document.getElementById('prev-page').addEventListener('click', function () {
-            $('.sj-book').turn('previous');
-        });
-
-        document.getElementById('next-page').addEventListener('click', function () {
-            $('.sj-book').turn('next');
-        });
-
-        document.getElementById('single-page').addEventListener('click', function () {
-            const flipbook = $('.sj-book');
-            const isSingle = flipbook.turn('display') === 'single';
-            flipbook.turn('display', isSingle ? 'double' : 'single');
+            $('#zoomOut').click(function() {
+                var currentZoom = $('#canvas').css('transform');
+                var zoomFactor = parseFloat(currentZoom.split(',')[0].replace('matrix(', ''));
+                $('#canvas').css('transform', 'scale(' + (zoomFactor - 0.1) + ')');
+            });
         });
     </script>
 </body>
