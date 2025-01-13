@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -30,16 +30,14 @@
         }
 
         .sj-book {
-            max-width: 800px; /* تحديد العرض ليكون مماثل لكود رقم 1 */
-            width: 100%;
-            max-height: 600px; /* تحديد الارتفاع ليكون مشابه للكود رقم 1 */
-            height: 100%;
+            width: 89-px; /* الأبعاد المطلوبة (من كود رقم 1) */
+            height: 600px; /* الأبعاد المطلوبة (من كود رقم 1) */
             transition: transform 0.3s ease-in-out;
         }
 
         .controls {
             position: fixed;
-            bottom: -10px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -148,15 +146,21 @@
 </head>
 <body>
     <div id="canvas">
-        <div id="book-zoom">
-            <div class="sj-book" style="direction: rtl;">
-                <div depth="5" class="hard"> <div class="side"></div> </div>
-                <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
-                <div class="own-size"></div>
-                <div class="own-size even"></div>
-                <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
-                <div class="hard p18"></div>
+        <div class="sj-book">
+            <!-- دمج هيكل الكتاب من كود رقم 1 هنا -->
+
+            <div class="hard">
+                <div class="side"></div>
             </div>
+            <div class="hard front-side">
+                <div class="depth"></div>
+            </div>
+            <div class="own-size"></div>
+            <div class="own-size even"></div>
+            <div class="hard fixed back-side p17">
+                <div class="depth"></div>
+            </div>
+            <div class="hard p18"></div>
         </div>
     </div>
 
@@ -327,9 +331,7 @@
 
                         // إظهار / إخفاء زر العين بناءً على الصفحة
                         const eyeButton = document.getElementById('eye-button');
-                        if ([1, 2, 8, 9].includes(page)) {
-                            eyeButton.style.display = 'none';
-                        } else if (page > 3 && page < 8) {
+                        if (page >= 3 && page <= 7) {
                             eyeButton.style.display = 'flex';
                         } else {
                             eyeButton.style.display = 'none';
