@@ -17,7 +17,6 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            transition: background-color 0.5s ease;
         }
 
         #canvas {
@@ -281,6 +280,7 @@
                 duration: 1000,
                 pages: 18,
                 direction: 'rtl',
+                display: 'double',  // جعل العرض مزدوجًا
                 when: {
                     turning: function (e, page, view) {
                         var book = $(this),
