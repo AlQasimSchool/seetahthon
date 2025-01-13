@@ -1,6 +1,8 @@
 <!doctype html>
-<html lang="ar">
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="../../extras/jquery.min.1.7.js"></script>
     <script type="text/javascript" src="../../extras/jquery-ui-1.8.20.custom.min.js"></script>
     <script type="text/javascript" src="../../extras/jquery.mousewheel.min.js"></script>
@@ -8,30 +10,99 @@
     <script type="text/javascript" src="../../lib/hash.js"></script>
     <style>
         body {
-            background-color: #fff; /* خلفية الصفحة بيضاء */
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1;
-            pointer-events: none;
+            background-color: white;
+            background-image: url('pics/newsletter_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         #canvas {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            z-index: 2;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -20px;
+        }
+
+        .sj-book {
+            max-width: 800px; /* تحديد العرض ليكون مماثل لكود رقم 1 */
+            width: 100%;
+            max-height: 600px; /* تحديد الارتفاع ليكون مشابه للكود رقم 1 */
+            height: 100%;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .controls button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background-color: #333;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #555;
+        }
+
+        iframe {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 640px;
+            height: 480px;
+            border: none;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        iframe.active {
+            display: block;
+        }
+
+        .eye-button {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .eye-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
         }
 
         .instructions {
@@ -45,9 +116,10 @@
             color: #fff;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            font-family: Arial, sans-serif;
             font-size: 14px;
-            text-align: center;
             z-index: 3;
+            text-align: center;
         }
 
         .instructions h3 {
@@ -57,352 +129,284 @@
             color: #ffcc00;
         }
 
-        .button {
-            position: absolute;
-            bottom: 10px; /* جعل الأزرار أسفل الكتاب مباشرة */
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 4;
+        .instructions ul {
+            padding: 0;
+            margin: 10px 0 0 0;
+            list-style-type: none;
         }
 
-        .button-left {
-            left: 60px; /* جعل زر التنقل لليسار في الأسفل */
+        .instructions ul li {
+            margin-bottom: 12px;
         }
 
-        .button-right {
-            right: 60px; /* جعل زر التنقل لليمين في الأسفل */
-        }
-
-        .button-dark-mode {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: #333;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 5;
-        }
-
-        .button-zoom {
-            position: fixed;
-            top: 100px;
-            left: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 5;
-        }
-
-        .button-zoom:last-child {
-            left: 60px;
-        }
-
-        .sj-book {
-            transform: scale(0.9);
-            transform-origin: center center;
-            transition: transform 0.2s ease-in-out;
-        }
-
-        /* تصميم للأجهزة المحمولة */
-        @media (max-width: 768px) {
-            .button {
-                width: 35px;
-                height: 35px;
-                font-size: 18px;
-            }
-
-            .button-left, .button-right {
-                bottom: 10px;
-            }
-
-            .button-zoom {
-                top: 100px;
-            }
-
-            .button-dark-mode {
-                top: 10px;
-                right: 10px;
-            }
+        .instructions ul li:before {
+            content: "✔ ";
+            color: #ffcc00;
+            margin-right: 5px;
         }
     </style>
 </head>
-<body class="hidden">
-<div class="overlay"></div>
-
-<div id="canvas">
-    <div id="book-zoom">
-        <div class="sj-book">
-            <div depth="5" class="hard"> <div class="side"></div> </div>
-            <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
-            <div class="own-size"></div>
-            <div class="own-size even"></div>
-            <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
-            <div class="hard p18"></div>
+<body>
+    <div id="canvas">
+        <div id="book-zoom">
+            <div class="sj-book" style="direction: rtl;">
+                <div depth="5" class="hard"> <div class="side"></div> </div>
+                <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
+                <div class="own-size"></div>
+                <div class="own-size even"></div>
+                <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
+                <div class="hard p18"></div>
+            </div>
         </div>
     </div>
-    <div id="slider-bar" class="turnjs-slider">
-        <div id="slider"></div>
+
+    <div class="controls">
+        <button id="prev-page">&#x25C0;</button>
+        <button id="next-page">&#x25B6;</button>
+        <button id="zoom-in">+</button>
+        <button id="zoom-out">-</button>
+        <button id="toggle-theme">&#x1F4A7;</button>
+        <button id="single-page">&#x1F441;</button>
+        <button id="toggle-form">تقييم</button>
     </div>
 
-    <!-- أزرار التنقل أسفل الكتاب -->
-    <button class="button button-left" onclick="$('.sj-book').turn('previous');">
-        &#8592;
-    </button>
-    <button class="button button-right" onclick="$('.sj-book').turn('next');">
-        &#8594;
-    </button>
+    <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
 
-    <!-- زر تغيير الوضع الداكن -->
-    <button class="button-dark-mode" onclick="toggleDarkMode()">
-        🌙
-    </button>
+    <div class="eye-button" id="eye-button">&#128065;</div>
 
-    <!-- أزرار التكبير والتصغير -->
-    <button class="button-zoom" onclick="zoomOut()">-</button>
-    <button class="button-zoom" onclick="zoomIn()">+</button>
-</div>
+    <script>
+        // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
+        function loadApp() {
+            var flipbook = $('.sj-book');
 
-<script type="text/javascript">
-    var isDarkMode = false;
-    var zoomLevel = 0.9;
-
-    function toggleDarkMode() {
-        isDarkMode = !isDarkMode;
-        if (isDarkMode) {
-            document.body.style.backgroundColor = "#333";
-            document.body.style.color = "#fff";
-            document.querySelector('.overlay').style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        } else {
-            document.body.style.backgroundColor = "#fff"; /* خلفية بيضاء */
-            document.body.style.color = "#000"; /* نص باللون الأسود */
-            document.querySelector('.overlay').style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-        }
-    }
-
-    function zoomIn() {
-        zoomLevel += 0.1;
-        $(".sj-book").css("transform", "scale(" + zoomLevel + ")");
-    }
-
-    function zoomOut() {
-        zoomLevel -= 0.1;
-        if (zoomLevel >= 0.5) {
-            $(".sj-book").css("transform", "scale(" + zoomLevel + ")");
-        }
-    }
-
-    function loadApp() {
-        var flipbook = $('.sj-book');
-
-        if (flipbook.width() == 0 || flipbook.height() == 0) {
-            setTimeout(loadApp, 10);
-            return;
-        }
-
-        $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
-            var data = $(this).data(),
-                step = 30,
-                flipbook = $('.sj-book'),
-                actualPos = $('#slider').slider('value') * step;
-
-            if (typeof (data.scrollX) === 'undefined') {
-                data.scrollX = actualPos;
-                data.scrollPage = flipbook.turn('page');
+            if (flipbook.width() == 0 || flipbook.height() == 0) {
+                setTimeout(loadApp, 10);
+                return;
             }
 
-            data.scrollX = Math.min($("#slider").slider('option', 'max') * step,
-                Math.max(0, data.scrollX + deltaX));
+            $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
+                var data = $(this).data(),
+                    step = 30,
+                    flipbook = $('.sj-book'),
+                    actualPos = $('#slider').slider('value') * step;
 
-            var actualView = Math.round(data.scrollX / step),
-                page = Math.min(flipbook.turn('pages'), Math.max(1, actualView * 2 - 2));
-
-            if ($.inArray(data.scrollPage, flipbook.turn('view', page)) == -1) {
-                data.scrollPage = page;
-                flipbook.turn('page', page);
-            }
-
-            if (data.scrollTimer)
-                clearInterval(data.scrollTimer);
-
-            data.scrollTimer = setTimeout(function () {
-                data.scrollX = undefined;
-                data.scrollPage = undefined;
-                data.scrollTimer = undefined;
-            }, 1000);
-
-        });
-
-        $("#slider").slider({
-            min: 1,
-            max: 100,
-
-            start: function (event, ui) {
-                if (!window._thumbPreview) {
-                    _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
-                    setPreview(ui.value);
-                    _thumbPreview.appendTo($(ui.handle));
-                } else
-                    setPreview(ui.value);
-
-                moveBar(false);
-            },
-
-            slide: function (event, ui) {
-                setPreview(ui.value);
-            },
-
-            stop: function () {
-                if (window._thumbPreview)
-                    _thumbPreview.removeClass('show');
-
-                $('.sj-book').turn('page', Math.max(1, $(this).slider('value') * 2 - 2));
-            }
-        });
-
-        Hash.on('^page\/([0-9]*)$', {
-            yep: function (path, parts) {
-                var page = parts[1];
-
-                if (page !== undefined) {
-                    if ($('.sj-book').turn('is'))
-                        $('.sj-book').turn('page', page);
+                if (typeof (data.scrollX) === 'undefined') {
+                    data.scrollX = actualPos;
+                    data.scrollPage = flipbook.turn('page');
                 }
 
-            },
-            nop: function (path) {
-                if ($('.sj-book').turn('is'))
-                    $('.sj-book').turn('page', 1);
-            }
-        });
+                data.scrollX = Math.min($("#slider").slider('option', 'max') * step,
+                    Math.max(0, data.scrollX + deltaX));
 
-        $(document).keydown(function (e) {
-            var previous = 37, next = 39;
+                var actualView = Math.round(data.scrollX / step),
+                    page = Math.min(flipbook.turn('pages'), Math.max(1, actualView * 2 - 2));
 
-            switch (e.keyCode) {
-                case previous:
-                    $('.sj-book').turn('previous');
-                    break;
-                case next:
-                    $('.sj-book').turn('next');
-                    break;
-            }
-        });
+                if ($.inArray(data.scrollPage, flipbook.turn('view', page)) == -1) {
+                    data.scrollPage = page;
+                    flipbook.turn('page', page);
+                }
 
-        flipbook.bind(($.isTouch) ? 'touchend' : 'click', zoomHandle);
+                if (data.scrollTimer)
+                    clearInterval(data.scrollTimer);
 
-        flipbook.turn({
-            elevation: 50,
-            acceleration: !isChrome(),
-            autoCenter: true,
-            gradients: true,
-            duration: 1000,
-            pages: 18,
-            rtl: true, // الكتاب يفتح من اليمين لليسار
-            when: {
-                turning: function (e, page, view) {
-                    var book = $(this),
-                        currentPage = book.turn('page'),
-                        pages = book.turn('pages');
+                data.scrollTimer = setTimeout(function () {
+                    data.scrollX = undefined;
+                    data.scrollPage = undefined;
+                    data.scrollTimer = undefined;
+                }, 1000);
 
-                    if (currentPage > 3 && currentPage < pages - 3) {
-                        if (page == 1) {
-                            book.turn('page', 2).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        } else if (page == pages) {
-                            book.turn('page', pages - 1).turn('stop').turn('page', page);
-                            e.preventDefault();
-                            return;
-                        }
-                    }
+            });
 
-                    updateDepth(book, page);
-
-                    if (page >= 2)
-                        $('.sj-book .p2').addClass('fixed');
-                    else
-                        $('.sj-book .p2').removeClass('fixed');
-
-                    if (page < book.turn('pages'))
-                        $('.sj-book .p17').addClass('fixed');
-                    else
-                        $('.sj-book .p17').removeClass('fixed');
-
-                    Hash.go('page/' + page).update();
-                },
-
-                turned: function (e, page, view) {
-                    var book = $(this);
-
-                    if (page == 2 || page == 3) {
-                        book.turn('peel', 'br');
-                    }
-
-                    updateDepth(book);
-
-                    $('#slider').slider('value', getViewNumber(book, page));
-
-                    book.turn('center');
-                },
-
-                start: function (e, pageObj) {
-                    moveBar(true);
-                },
-
-                end: function (e, pageObj) {
-                    var book = $(this);
-
-                    updateDepth(book);
-
-                    setTimeout(function () {
-                        $('#slider').slider('value', getViewNumber(book));
-                    }, 1);
+            $("#slider").slider({
+                min: 1,
+                max: 100,
+                start: function (event, ui) {
+                    if (!window._thumbPreview) {
+                        _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
+                        setPreview(ui.value);
+                        _thumbPreview.appendTo($(ui.handle));
+                    } else
+                        setPreview(ui.value);
 
                     moveBar(false);
                 },
 
-                missing: function (e, pages) {
-                    for (var i = 0; i < pages.length; i++) {
-                        addPage(pages[i], $(this));
+                slide: function (event, ui) {
+                    setPreview(ui.value);
+                },
+
+                stop: function () {
+                    if (window._thumbPreview)
+                        _thumbPreview.removeClass('show');
+
+                    $('.sj-book').turn('page', Math.max(1, $(this).slider('value') * 2 - 2));
+                }
+            });
+
+            Hash.on('^page\/([0-9]*)$', {
+                yep: function (path, parts) {
+                    var page = parts[1];
+
+                    if (page !== undefined) {
+                        if ($('.sj-book').turn('is'))
+                            $('.sj-book').turn('page', page);
+                    }
+
+                },
+                nop: function (path) {
+                    if ($('.sj-book').turn('is'))
+                        $('.sj-book').turn('page', 1);
+                }
+            });
+
+            $(document).keydown(function (e) {
+                var previous = 37, next = 39;
+
+                switch (e.keyCode) {
+                    case previous:
+                        $('.sj-book').turn('previous');
+                        break;
+                    case next:
+                        $('.sj-book').turn('next');
+                        break;
+                }
+            });
+
+            flipbook.bind(($.isTouch) ? 'touchend' : 'click', zoomHandle);
+
+            flipbook.turn({
+                elevation: 50,
+                acceleration: !isChrome(),
+                autoCenter: true,
+                gradients: true,
+                duration: 1000,
+                pages: 18,
+                direction: 'rtl',
+                display: 'double',  // جعل العرض مزدوجًا
+                when: {
+                    turning: function (e, page, view) {
+                        var book = $(this),
+                            currentPage = book.turn('page'),
+                            pages = book.turn('pages');
+
+                        if (currentPage > 3 && currentPage < pages - 3) {
+                            if (page == 1) {
+                                book.turn('page', 2).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            } else if (page == pages) {
+                                book.turn('page', pages - 1).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            }
+                        } else if (page > 3 && page < pages - 3) {
+                            if (currentPage == 1) {
+                                book.turn('page', 2).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            } else if (currentPage == pages) {
+                                book.turn('page', pages - 1).turn('stop').turn('page', page);
+                                e.preventDefault();
+                                return;
+                            }
+                        }
+
+                        updateDepth(book, page);
+
+                        if (page >= 2)
+                            $('.sj-book .p2').addClass('fixed');
+                        else
+                            $('.sj-book .p2').removeClass('fixed');
+
+                        if (page < book.turn('pages'))
+                            $('.sj-book .p17').addClass('fixed');
+                        else
+                            $('.sj-book .p17').removeClass('fixed');
+
+                        Hash.go('page/' + page).update();
+
+                        // إظهار / إخفاء زر العين بناءً على الصفحة
+                        const eyeButton = document.getElementById('eye-button');
+                        if ([1, 2, 8, 9].includes(page)) {
+                            eyeButton.style.display = 'none';
+                        } else if (page > 3 && page < 8) {
+                            eyeButton.style.display = 'flex';
+                        } else {
+                            eyeButton.style.display = 'none';
+                        }
+                    },
+
+                    turned: function (e, page, view) {
+                        var book = $(this);
+
+                        if (page == 2 || page == 3) {
+                            book.turn('peel', 'br');
+                        }
+
+                        updateDepth(book);
+
+                        setTimeout(function () {
+                            $('#slider').slider('value', getViewNumber(book, page));
+                        }, 1);
+
+                        book.turn('center');
+                    },
+
+                    missing: function (e, pages) {
+                        for (var i = 0; i < pages.length; i++) {
+                            addPage(pages[i], $(this));
+                        }
                     }
                 }
-            }
+            });
+
+            $('#slider').slider('option', 'max', numberOfViews(flipbook));
+            flipbook.addClass('animated');
+            $('#canvas').css({ visibility: '' });
+        }
+
+        $('#canvas').css({ visibility: 'hidden' });
+
+        yepnope({
+            test: Modernizr.csstransforms,
+            yep: ['../../lib/turn.min.js'],
+            nope: ['../../lib/turn.html4.min.js', 'css/jquery.ui.html4.css', 'css/steve-jobs-html4.css'],
+            both: ['js/steve-jobs.js', 'css/jquery.ui.css', 'css/steve-jobs.css'],
+            complete: loadApp
         });
 
-        $('#slider').slider('option', 'max', numberOfViews(flipbook));
-        flipbook.addClass('animated');
-        $('#canvas').css({ visibility: '' });
-    }
+        document.getElementById('toggle-theme').addEventListener('click', function () {
+            document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
+        });
 
-    $('#canvas').css({ visibility: 'hidden' });
+        document.getElementById('toggle-form').addEventListener('click', function () {
+            const form = document.getElementById('feedback-form');
+            form.classList.toggle('active');
+        });
 
-    yepnope({
-        test: Modernizr.csstransforms,
-        yep: ['../../lib/turn.min.js'],
-        nope: ['../../lib/turn.html4.min.js', 'css/jquery.ui.html4.css', 'css/steve-jobs-html4.css'],
-        both: ['js/steve-jobs.js', 'css/jquery.ui.css', 'css/steve-jobs.css'],
-        complete: loadApp
-    });
-</script>
+        document.getElementById('zoom-in').addEventListener('click', function () {
+            const book = document.querySelector('.sj-book');
+            book.style.transform = 'scale(1.2)';
+        });
 
+        document.getElementById('zoom-out').addEventListener('click', function () {
+            const book = document.querySelector('.sj-book');
+            book.style.transform = 'scale(1)';
+        });
+
+        document.getElementById('prev-page').addEventListener('click', function () {
+            $('.sj-book').turn('previous');
+        });
+
+        document.getElementById('next-page').addEventListener('click', function () {
+            $('.sj-book').turn('next');
+        });
+
+        document.getElementById('single-page').addEventListener('click', function () {
+            const flipbook = $('.sj-book');
+            const isSingle = flipbook.turn('display') === 'single';
+            flipbook.turn('display', isSingle ? 'double' : 'single');
+        });
+    </script>
 </body>
 </html>
