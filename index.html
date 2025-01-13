@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            transition: background-color 0.5s ease;
         }
 
         #canvas {
@@ -30,14 +31,14 @@
         }
 
         .sj-book {
-            width: 800-px; /* الأبعاد المطلوبة (من كود رقم 1) */
-            height: 600px; /* الأبعاد المطلوبة (من كود رقم 1) */
+            max-width: 100%;
+            max-height: 100%;
             transition: transform 0.3s ease-in-out;
         }
 
         .controls {
             position: fixed;
-            bottom: 10px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -146,21 +147,15 @@
 </head>
 <body>
     <div id="canvas">
-        <div class="sj-book">
-            <!-- دمج هيكل الكتاب من كود رقم 1 هنا -->
-
-            <div class="hard">
-                <div class="side"></div>
+        <div id="book-zoom">
+            <div class="sj-book" style="direction: rtl;">
+                <div depth="5" class="hard"> <div class="side"></div> </div>
+                <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
+                <div class="own-size"></div>
+                <div class="own-size even"></div>
+                <div class="hard fixed back-side p17"> <div class="depth"></div> </div>
+                <div class="hard p18"></div>
             </div>
-            <div class="hard front-side">
-                <div class="depth"></div>
-            </div>
-            <div class="own-size"></div>
-            <div class="own-size even"></div>
-            <div class="hard fixed back-side p17">
-                <div class="depth"></div>
-            </div>
-            <div class="hard p18"></div>
         </div>
     </div>
 
@@ -286,7 +281,6 @@
                 duration: 1000,
                 pages: 18,
                 direction: 'rtl',
-                display: 'double',  // جعل العرض مزدوجًا
                 when: {
                     turning: function (e, page, view) {
                         var book = $(this),
@@ -331,7 +325,9 @@
 
                         // إظهار / إخفاء زر العين بناءً على الصفحة
                         const eyeButton = document.getElementById('eye-button');
-                        if (page >= 3 && page <= 7) {
+                        if ([1, 2, 8, 9].includes(page)) {
+                            eyeButton.style.display = 'none';
+                        } else if (page > 3 && page < 8) {
                             eyeButton.style.display = 'flex';
                         } else {
                             eyeButton.style.display = 'none';
