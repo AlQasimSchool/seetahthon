@@ -177,16 +177,17 @@
             document.getElementById('canvas').style.transform = `scale(${zoomLevel})`;
         });
 
+        // تغيير اللون عند الضغط على الزر
         document.getElementById('toggle-theme').addEventListener('click', function () {
             const body = document.body;
             const isDark = body.style.backgroundColor === 'rgb(0, 0, 0)';
 
             if (isDark) {
-                body.style.backgroundColor = '#ffffff';
-                body.style.color = '#000000';
+                body.style.backgroundColor = '#ffffff';  // اللون الأبيض
+                body.style.color = '#000000';  // اللون الأسود
             } else {
-                body.style.backgroundColor = '#000000';
-                body.style.color = '#ffffff';
+                body.style.backgroundColor = '#000000';  // اللون الأسود
+                body.style.color = '#ffffff';  // اللون الأبيض
             }
         });
 
@@ -424,6 +425,9 @@
             $('#slider').slider('option', 'max', numberOfViews(flipbook));
             flipbook.addClass('animated');
             $('#canvas').css({ visibility: '' });
+
+            // تعيين مقياس الزوم إلى 45% عند تحميل الصفحة
+            document.getElementById('canvas').style.transform = 'scale(0.45)';
         }
 
         $('#canvas').css({ visibility: 'hidden' });
