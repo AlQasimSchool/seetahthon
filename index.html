@@ -37,7 +37,7 @@
 
         .controls {
             position: fixed;
-            bottom: 20px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -69,10 +69,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%;
-            height: 70%;
-            max-width: 800px;
-            max-height: 600px;
+            width: 640px;
+            height: 480px;
             border: none;
             z-index: 100;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -80,6 +78,29 @@
 
         iframe.active {
             display: block;
+        }
+
+        .eye-button {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .eye-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
         }
 
         .instructions {
@@ -149,6 +170,8 @@
 
     <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
 
+    <div class="eye-button" id="eye-button">&#128065;</div>
+
     <script>
         // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
         function loadApp() {
@@ -158,6 +181,9 @@
                 setTimeout(loadApp, 10);
                 return;
             }
+
+            // تطبيق التصغير إلى 45% عند تحميل الصفحة
+            flipbook.css('transform', 'scale(0.45)');  // التصغير إلى 45%
 
             $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
                 var data = $(this).data(),
@@ -189,7 +215,6 @@
                     data.scrollPage = undefined;
                     data.scrollTimer = undefined;
                 }, 1000);
-
             });
 
             $("#slider").slider({
@@ -299,6 +324,16 @@
                             $('.sj-book .p17').removeClass('fixed');
 
                         Hash.go('page/' + page).update();
+
+                        // إظهار / إخفاء زر العين بناءً على الصفحة
+                        const eyeButton = document.getElementById('eye-button');
+                        if ([1, 2, 8, 9].includes(page)) {
+                            eyeButton.style.display = 'none';
+                        } else if (page > 3 && page < 8) {
+                            eyeButton.style.display = 'flex';
+                        } else {
+                            eyeButton.style.display = 'none';
+                        }
                     },
 
                     turned: function (e, page, view) {
@@ -351,16 +386,12 @@
 
         document.getElementById('zoom-in').addEventListener('click', function () {
             const book = document.querySelector('.sj-book');
-            let scale = parseFloat(book.style.transform.replace('scale(', '').replace(')', '')) || 1;
-            scale += 0.2;
-            book.style.transform = 'scale(' + scale + ')';
+            book.style.transform = 'scale(1.2)';
         });
 
         document.getElementById('zoom-out').addEventListener('click', function () {
             const book = document.querySelector('.sj-book');
-            let scale = parseFloat(book.style.transform.replace('scale(', '').replace(')', '')) || 1;
-            scale -= 0.2;
-            book.style.transform = 'scale(' + scale + ')';
+            book.style.transform = 'scale(1)';
         });
 
         document.getElementById('prev-page').addEventListener('click', function () {
@@ -373,8 +404,7 @@
 
         document.getElementById('single-page').addEventListener('click', function () {
             const flipbook = $('.sj-book');
-            const isSingle = flipbook.turn('display') === 'single';
-            flipbook.turn('display', isSingle ? 'double' : 'single');
+            flipbook.turn('display', 'single');
         });
     </script>
 </body>
