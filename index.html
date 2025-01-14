@@ -39,7 +39,7 @@
 
         .controls {
             position: fixed;
-            bottom: 20px; /* تم تعديل هذه القيمة لرفع الأزرار قليلاً */
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -65,6 +65,53 @@
             background-color: #555;
         }
 
+        .controls-vertical {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .controls-vertical button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background-color: #333;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .controls-vertical button:hover {
+            background-color: #555;
+        }
+
+        #toggle-theme {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+        }
+
         iframe {
             display: none;
             position: fixed;
@@ -81,46 +128,6 @@
 
         iframe.active {
             display: block;
-        }
-
-        .instructions {
-            position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 240px;
-            padding: 20px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(40, 40, 40, 0.9));
-            color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 3;
-            text-align: center;
-        }
-
-        .instructions h3 {
-            margin-top: 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffcc00;
-        }
-
-        .instructions ul {
-            padding: 0;
-            margin: 10px 0 0 0;
-            list-style-type: none;
-        }
-
-        .instructions ul li {
-            margin-bottom: 12px;
-        }
-
-        .instructions ul li:before {
-            content: "✔ ";
-            color: #ffcc00;
-            margin-right: 5px;
         }
     </style>
 </head>
@@ -141,10 +148,14 @@
     <div class="controls">
         <button id="prev-page">&#x25C0;</button>
         <button id="next-page">&#x25B6;</button>
+    </div>
+
+    <div class="controls-vertical">
         <button id="zoom-in">+</button>
         <button id="zoom-out">-</button>
-        <button id="toggle-theme">&#x1F4A7;</button>
     </div>
+
+    <button id="toggle-theme">&#x1F4A7;</button>
 
     <script>
         // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
@@ -353,7 +364,7 @@
 
         document.getElementById('zoom-out').addEventListener('click', function () {
             scale -= 0.1;
-            if (scale < 0.2) scale = 0.1;  // الحد الأدنى للتكبير
+            if (scale < 0.2) scale = 0.2;  // الحد الأدنى للتكبير
             document.querySelector('.sj-book').style.transform = `scale(${scale})`;
         });
 
