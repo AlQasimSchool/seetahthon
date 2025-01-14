@@ -10,118 +10,144 @@
     <script type="text/javascript" src="../../lib/hash.js"></script>
     <style>
         body {
-            background-color: #ffffff;
-            color: #000000;
+            margin: 0;
+            padding: 0;
+            background-color: white;
             background-image: url('pics/newsletter_bg.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            position: relative;
-            font-family: Arial, sans-serif;
-            transition: background-color 0.5s, color 0.5s;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #ffffffcc;
-            z-index: 1;
-            pointer-events: none;
         }
 
         #canvas {
             position: relative;
-            z-index: 2;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
-            box-sizing: border-box;
-            transition: transform 0.3s ease;
-            user-select: none;
+            margin-top: -20px;
+        }
+
+        .sj-book {
+            max-width: 100%;
+            max-height: 100%;
+            transition: transform 0.3s ease-in-out;
         }
 
         .controls {
             position: fixed;
-            bottom: 20px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
-            z-index: 3;
+            z-index: 10;
         }
 
         .controls button {
             width: 50px;
             height: 50px;
             border: none;
-            background-color: #007bff;
-            color: #ffffff;
-            font-size: 20px;
             border-radius: 50%;
-            cursor: pointer;
+            background-color: #333;
+            color: white;
+            font-size: 24px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: background-color 0.3s, transform 0.2s;
+            justify-content: center;
+            cursor: pointer;
         }
 
         .controls button:hover {
-            background-color: #0056b3;
-            transform: scale(1.1);
+            background-color: #555;
         }
 
-        @media (max-width: 1024px) {
-            #canvas {
-                padding: 10px;
-            }
-
-            .controls {
-                gap: 8px;
-            }
-
-            .controls button {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-            }
+        iframe {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 640px;
+            height: 480px;
+            border: none;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        @media (max-width: 768px) {
-            .controls button {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
+        iframe.active {
+            display: block;
         }
 
-        @media (max-width: 480px) {
-            .controls button {
-                width: 35px;
-                height: 35px;
-                font-size: 14px;
-            }
+        .eye-button {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-            .controls {
-                bottom: 15px;
-            }
+        .eye-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .instructions {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 240px;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(40, 40, 40, 0.9));
+            color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 3;
+            text-align: center;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        .instructions ul {
+            padding: 0;
+            margin: 10px 0 0 0;
+            list-style-type: none;
+        }
+
+        .instructions ul li {
+            margin-bottom: 12px;
+        }
+
+        .instructions ul li:before {
+            content: "✔ ";
+            color: #ffcc00;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
-
     <div id="canvas">
         <div id="book-zoom">
-            <div class="sj-book" dir="rtl">
+            <div class="sj-book" style="direction: rtl;">
                 <div depth="5" class="hard"> <div class="side"></div> </div>
                 <div depth="5" class="hard front-side"> <div class="depth"></div> </div>
                 <div class="own-size"></div>
@@ -130,108 +156,24 @@
                 <div class="hard p18"></div>
             </div>
         </div>
-        <div id="slider-bar" class="turnjs-slider">
-            <div id="slider"></div>
-        </div>
     </div>
 
     <div class="controls">
-        <button id="prev-page">&#9664;</button>
-        <button id="next-page">&#9654;</button>
-        <button id="zoom-in">&#43;</button>
-        <button id="zoom-out">&#8722;</button>
-        <button id="toggle-theme">&#9788;</button>
-        <button id="toggle-view" style="display:none;">&#128065;</button>
+        <button id="prev-page">&#x25C0;</button>
+        <button id="next-page">&#x25B6;</button>
+        <button id="zoom-in">+</button>
+        <button id="zoom-out">-</button>
+        <button id="toggle-theme">&#x1F4A7;</button>
+        <button id="single-page">&#x1F441;</button>
+        <button id="toggle-form">تقييم</button>
     </div>
 
-    <script type="text/javascript">
-        let zoomLevel = 0.45; // تم تعيين الزوم ليكون 45% بشكل افتراضي
-        let singlePageView = false;
-        let isDragging = false;
-        let startX, startY, initialX, initialY;
+    <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
 
-        // إظهار زر العين بعد الصفحة الثانية
-        function showEyeButton(page) {
-            if (page > 2) {
-                document.getElementById('toggle-view').style.display = 'block'; // إظهار زر العين بعد الصفحة الثانية
-            } else {
-                document.getElementById('toggle-view').style.display = 'none'; // إخفاء زر العين قبل الصفحة الثانية
-            }
-        }
+    <div class="eye-button" id="eye-button">&#128065;</div>
 
-        document.getElementById('prev-page').addEventListener('click', function () {
-            $('.sj-book').turn('next'); // Adjust for RTL
-        });
-
-        document.getElementById('next-page').addEventListener('click', function () {
-            $('.sj-book').turn('previous'); // Adjust for RTL
-        });
-
-        document.getElementById('zoom-in').addEventListener('click', function () {
-            zoomLevel = Math.min(zoomLevel + 0.1, 2);
-            document.getElementById('canvas').style.transform = `scale(${zoomLevel})`;
-        });
-
-        document.getElementById('zoom-out').addEventListener('click', function () {
-            zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
-            document.getElementById('canvas').style.transform = `scale(${zoomLevel})`;
-        });
-
-        // تغيير اللون عند الضغط على الزر
-        document.getElementById('toggle-theme').addEventListener('click', function () {
-            const body = document.body;
-            const isDark = body.style.backgroundColor === 'rgb(0, 0, 0)';
-
-            if (isDark) {
-                body.style.backgroundColor = '#ffffff';  // اللون الأبيض
-                body.style.color = '#000000';  // اللون الأسود
-            } else {
-                body.style.backgroundColor = '#000000';  // اللون الأسود
-                body.style.color = '#ffffff';  // اللون الأبيض
-            }
-        });
-
-        document.getElementById('toggle-view').addEventListener('click', function () {
-            const flipbook = $('.sj-book');
-            flipbook.turn('page', 4);  // الانتقال إلى صفحة معينة داخل الكتاب عند الضغط على زر العين
-
-            // تكبير الصفحة لتتناسب مع مقاسات الأجهزة
-            document.getElementById('canvas').style.transform = 'scale(1.5)';
-            enableDragging(); // تمكين السحب عند الضغط على زر العين
-        });
-
-        // تفعيل السحب عند الضغط على زر العين
-        function enableDragging() {
-            document.getElementById('canvas').addEventListener('mousedown', startDrag);
-            document.getElementById('canvas').addEventListener('touchstart', startDrag);
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('touchmove', drag);
-            document.addEventListener('mouseup', endDrag);
-            document.addEventListener('touchend', endDrag);
-        }
-
-        function startDrag(e) {
-            e.preventDefault();
-            isDragging = true;
-            startX = e.pageX || e.touches[0].pageX;
-            startY = e.pageY || e.touches[0].pageY;
-            initialX = document.getElementById('canvas').scrollLeft;
-            initialY = document.getElementById('canvas').scrollTop;
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                const dx = (e.pageX || e.touches[0].pageX) - startX;
-                const dy = (e.pageY || e.touches[0].pageY) - startY;
-                document.getElementById('canvas').scrollLeft = initialX - dx;
-                document.getElementById('canvas').scrollTop = initialY - dy;
-            }
-        }
-
-        function endDrag() {
-            isDragging = false;
-        }
-
+    <script>
+        // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
         function loadApp() {
             var flipbook = $('.sj-book');
 
@@ -239,6 +181,9 @@
                 setTimeout(loadApp, 10);
                 return;
             }
+
+            // تطبيق التصغير إلى 45% عند تحميل الصفحة
+            flipbook.css('transform', 'scale(0.69)');  // التصغير إلى 45%
 
             $('#book-zoom').mousewheel(function (event, delta, deltaX, deltaY) {
                 var data = $(this).data(),
@@ -270,13 +215,11 @@
                     data.scrollPage = undefined;
                     data.scrollTimer = undefined;
                 }, 1000);
-
             });
 
             $("#slider").slider({
                 min: 1,
                 max: 100,
-
                 start: function (event, ui) {
                     if (!window._thumbPreview) {
                         _thumbPreview = $('<div />', { 'class': 'thumbnail' }).html('<div></div>');
@@ -321,10 +264,10 @@
 
                 switch (e.keyCode) {
                     case previous:
-                        $('.sj-book').turn('next'); // Adjust for RTL
+                        $('.sj-book').turn('previous');
                         break;
                     case next:
-                        $('.sj-book').turn('previous'); // Adjust for RTL
+                        $('.sj-book').turn('next');
                         break;
                 }
             });
@@ -338,14 +281,13 @@
                 gradients: true,
                 duration: 1000,
                 pages: 18,
-                direction: 'rtl', // Right-to-Left direction
+                direction: 'rtl',
+                display: 'double',  // جعل العرض مزدوجًا
                 when: {
                     turning: function (e, page, view) {
                         var book = $(this),
                             currentPage = book.turn('page'),
                             pages = book.turn('pages');
-
-                        showEyeButton(page);  // إظهار زر العين بعد الصفحة الثانية
 
                         if (currentPage > 3 && currentPage < pages - 3) {
                             if (page == 1) {
@@ -382,36 +324,32 @@
                             $('.sj-book .p17').removeClass('fixed');
 
                         Hash.go('page/' + page).update();
+
+                        // إظهار / إخفاء زر العين بناءً على الصفحة
+                        const eyeButton = document.getElementById('eye-button');
+                        if ([1, 2, 8, 9].includes(page)) {
+                            eyeButton.style.display = 'none';
+                        } else if (page > 3 && page < 8) {
+                            eyeButton.style.display = 'flex';
+                        } else {
+                            eyeButton.style.display = 'none';
+                        }
                     },
 
                     turned: function (e, page, view) {
                         var book = $(this);
 
                         if (page == 2 || page == 3) {
-                            book.turn('peel', 'bl'); // Adjust for RTL
+                            book.turn('peel', 'br');
                         }
 
                         updateDepth(book);
 
-                        $('#slider').slider('value', getViewNumber(book, page));
-
-                        book.turn('center');
-                    },
-
-                    start: function (e, pageObj) {
-                        moveBar(true);
-                    },
-
-                    end: function (e, pageObj) {
-                        var book = $(this);
-
-                        updateDepth(book);
-
                         setTimeout(function () {
-                            $('#slider').slider('value', getViewNumber(book));
+                            $('#slider').slider('value', getViewNumber(book, page));
                         }, 1);
 
-                        moveBar(false);
+                        book.turn('center');
                     },
 
                     missing: function (e, pages) {
@@ -425,9 +363,6 @@
             $('#slider').slider('option', 'max', numberOfViews(flipbook));
             flipbook.addClass('animated');
             $('#canvas').css({ visibility: '' });
-
-            // تعيين مقياس الزوم إلى 45% عند تحميل الصفحة
-            document.getElementById('canvas').style.transform = 'scale(0.45)';
         }
 
         $('#canvas').css({ visibility: 'hidden' });
@@ -438,6 +373,39 @@
             nope: ['../../lib/turn.html4.min.js', 'css/jquery.ui.html4.css', 'css/steve-jobs-html4.css'],
             both: ['js/steve-jobs.js', 'css/jquery.ui.css', 'css/steve-jobs.css'],
             complete: loadApp
+        });
+
+        document.getElementById('toggle-theme').addEventListener('click', function () {
+            document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
+        });
+
+        document.getElementById('toggle-form').addEventListener('click', function () {
+            const form = document.getElementById('feedback-form');
+            form.classList.toggle('active');
+        });
+
+        document.getElementById('zoom-in').addEventListener('click', function () {
+            const book = document.querySelector('.sj-book');
+            book.style.transform = 'scale(1.2)';
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', function () {
+            const book = document.querySelector('.sj-book');
+            book.style.transform = 'scale(1)';
+        });
+
+        document.getElementById('prev-page').addEventListener('click', function () {
+            $('.sj-book').turn('previous');
+        });
+
+        document.getElementById('next-page').addEventListener('click', function () {
+            $('.sj-book').turn('next');
+        });
+
+        document.getElementById('single-page').addEventListener('click', function () {
+            const flipbook = $('.sj-book');
+            const isSingle = flipbook.turn('display') === 'single';
+            flipbook.turn('display', isSingle ? 'double' : 'single');
         });
     </script>
 </body>
