@@ -144,12 +144,7 @@
         <button id="zoom-in">+</button>
         <button id="zoom-out">-</button>
         <button id="toggle-theme">&#x1F4A7;</button>
-        <button id="single-page">&#x1F441;</button>
-        <button id="toggle-form">تقييم</button>
     </div>
-
-    <!-- نموذج التقييم -->
-    <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
 
     <script>
         // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
@@ -348,12 +343,6 @@
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
         });
 
-        // تفعيل النموذج عند الضغط على الزر "تقييم"
-        document.getElementById('toggle-form').addEventListener('click', function () {
-            const iframe = document.getElementById('feedback-form');
-            iframe.classList.toggle('active');
-        });
-
         // وظيفة التكبير والتصغير عند الضغط على "+" و "-"
         let scale = 0.45;  // القيمة الابتدائية
 
@@ -364,7 +353,7 @@
 
         document.getElementById('zoom-out').addEventListener('click', function () {
             scale -= 0.1;
-            if (scale < 0.2) scale = 0.2;  // الحد الأدنى للتكبير
+            if (scale < 0.2) scale = 0.1;  // الحد الأدنى للتكبير
             document.querySelector('.sj-book').style.transform = `scale(${scale})`;
         });
 
