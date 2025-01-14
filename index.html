@@ -69,11 +69,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 640px;
-            height: 480px;
+            width: 80%;
+            height: 80%;
             border: none;
             z-index: 100;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
         }
 
         iframe.active {
@@ -168,6 +169,7 @@
         <button id="toggle-form">تقييم</button>
     </div>
 
+    <!-- نموذج التقييم -->
     <iframe id="feedback-form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAa__RgmXVJUQUpYTlBQQzgyWVBNQU9MWkNKN0tRWkM4Vi4u&embed=true"></iframe>
 
     <div class="eye-button" id="eye-button">&#128065;</div>
@@ -379,32 +381,24 @@
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
         });
 
+        // تفعيل النموذج عند الضغط على الزر "تقييم"
         document.getElementById('toggle-form').addEventListener('click', function () {
-            const form = document.getElementById('feedback-form');
-            form.classList.toggle('active');
+            const iframe = document.getElementById('feedback-form');
+            iframe.classList.toggle('active');
         });
 
+        // وظيفة التكبير والتصغير عند الضغط على "+" و "-"
+        let scale = 0.45;  // القيمة الابتدائية
+
         document.getElementById('zoom-in').addEventListener('click', function () {
-            const book = document.querySelector('.sj-book');
-            book.style.transform = 'scale(1.2)';
+            scale += 0.1;
+            document.querySelector('.sj-book').style.transform = `scale(${scale})`;
         });
 
         document.getElementById('zoom-out').addEventListener('click', function () {
-            const book = document.querySelector('.sj-book');
-            book.style.transform = 'scale(1)';
-        });
-
-        document.getElementById('prev-page').addEventListener('click', function () {
-            $('.sj-book').turn('previous');
-        });
-
-        document.getElementById('next-page').addEventListener('click', function () {
-            $('.sj-book').turn('next');
-        });
-
-        document.getElementById('single-page').addEventListener('click', function () {
-            const flipbook = $('.sj-book');
-            flipbook.turn('display', 'single');
+            scale -= 0.1;
+            if (scale < 0.2) scale = 0.2;  // الحد الأدنى للتكبير
+            document.querySelector('.sj-book').style.transform = `scale(${scale})`;
         });
     </script>
 </body>
