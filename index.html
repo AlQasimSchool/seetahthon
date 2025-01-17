@@ -8,6 +8,9 @@
     <script type="text/javascript" src="../../extras/jquery.mousewheel.min.js"></script>
     <script type="text/javascript" src="../../extras/modernizr.2.5.3.min.js"></script>
     <script type="text/javascript" src="../../lib/hash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
             margin: 0;
@@ -20,7 +23,7 @@
             background-repeat: no-repeat;
             transition: background-color 0.3s, color 0.3s; /* الانتقال السلس */
         }
-
+    
         #canvas {
             position: relative;
             width: 100%;
@@ -31,6 +34,7 @@
             margin-top: -20px;
             overflow: hidden; /* لإخفاء المحتوى المتجاوز */
         }
+    
 
         .sj-book {
             max-width: 100%;
@@ -39,6 +43,7 @@
             transform-origin: center center; /* الحفاظ على الأصل عند التكبير */
         }
 
+    
         .controls {
             position: fixed;
             bottom: 20px;
@@ -48,12 +53,13 @@
             gap: 10px;
             z-index: 10;
         }
-
-        .controls button {
-            width: 50px;
-            height: 50px;
+    
+        /* تغيير الأزرار إلى مربعة بحواف مدورة */
+        .controls button, .controls-vertical button {
+            width: 60px; /* تحديد عرض الزر */
+            height: 60px; /* تحديد ارتفاع الزر */
             border: none;
-            border-radius: 50%;
+            border-radius: 15px; /* حواف مدورة */
             background-color: #333;
             color: white;
             font-size: 24px;
@@ -62,11 +68,12 @@
             justify-content: center;
             cursor: pointer;
         }
-
-        .controls button:hover {
+    
+        /* التأثير عند التمرير على الزر */
+        .controls button:hover, .controls-vertical button:hover {
             background-color: #555;
         }
-
+    
         .controls-vertical {
             position: fixed;
             right: 20px;
@@ -76,35 +83,17 @@
             gap: 10px;
             z-index: 10;
         }
-
-        .controls-vertical button {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 50%;
-            background-color: #333;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .controls-vertical button:hover {
-            background-color: #555;
-        }
-
+    
         #toggle-theme {
             position: fixed;
             top: 20px;
             right: 20px;
             background-color: #333;
             color: white;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border: none;
-            border-radius: 50%;
+            border-radius: 15px; /* حواف مدورة */
             font-size: 24px;
             display: flex;
             align-items: center;
@@ -112,7 +101,7 @@
             cursor: pointer;
             z-index: 20;
         }
-
+    
         iframe {
             display: none;
             position: fixed;
@@ -126,11 +115,12 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             border-radius: 10px;
         }
-
+    
         iframe.active {
             display: block;
         }
     </style>
+    
 </head>
 <body>
     <div id="canvas">
@@ -156,7 +146,7 @@
         <button id="zoom-out">-</button>
     </div>
 
-    <button id="toggle-theme">☀️</button> <!-- بداية الشمس (الوضع المشمس) -->
+    <button id="toggle-theme"><i class="fa-solid fa-sun"></i></button> <!-- بداية الشمس (الوضع المشمس) -->
 
     <script>
         // إلغاء فتح النموذج تلقائيًا عند تحميل الصفحة
@@ -351,21 +341,23 @@
             complete: loadApp
         });
 
-        // تبديل اللون بين مشمس وهلال
-        let isDayMode = true;
+let isDayMode = true;
 
-        document.getElementById('toggle-theme').addEventListener('click', function () {
-            if (isDayMode) {
-                document.body.style.backgroundColor = 'black'; /* وضع الهلال */
-                document.body.style.color = 'white';
-                document.getElementById('toggle-theme').innerHTML = '🌙'; // الهلال
-            } else {
-                document.body.style.backgroundColor = 'white'; /* وضع مشمس */
-                document.body.style.color = 'black';
-                document.getElementById('toggle-theme').innerHTML = '☀️'; // الشمس
-            }
-            isDayMode = !isDayMode;
-        });
+document.getElementById('toggle-theme').addEventListener('click', function () {
+    if (isDayMode) {
+        document.body.style.backgroundColor = 'black';
+        document.body.style.color = 'white';
+        document.getElementById('toggle-theme').innerHTML = '<i class="fa-solid fa-moon"></i>';
+    } else {
+        // تغيير الألوان إلى الوضع النهاري
+        document.body.style.backgroundColor = 'white';
+        document.body.style.color = 'black';
+        // تغيير الأيقونة إلى أيقونة الشمس
+        document.getElementById('toggle-theme').innerHTML = '<i class="fa-solid fa-sun"></i>';
+    }
+    isDayMode = !isDayMode;
+});
+
 
         // وظيفة التكبير والتصغير عند الضغط على "+" و "-"
         let scale = 0.45;  // القيمة الابتدائية
@@ -381,14 +373,36 @@
             document.querySelector('.sj-book').style.transform = `scale(${scale})`;
         });
 
-        // التأكد من عمل الأزرار الخاصة بالأسهم
-        document.getElementById('prev-page').addEventListener('click', function () {
-            $('.sj-book').turn('previous');
-        });
+    // التأكد من عمل الأزرار الخاصة بالأسهم بشكل عكسي
+    document.getElementById('prev-page').addEventListener('click', function () {
+    $('.sj-book').turn('next');  // عند الضغط على "السابق" انتقل إلى الصفحة التالية
+    });
 
-        document.getElementById('next-page').addEventListener('click', function () {
-            $('.sj-book').turn('next');
-        });
+    document.getElementById('next-page').addEventListener('click', function () {
+    $('.sj-book').turn('previous');  // عند الضغط على "التالي" انتقل إلى الصفحة السابقة
+    });
+// تحديد العنصر الكتابي (هذا ليس ضروريًا الآن)
+var bookElement = document.querySelector('.sj-book');
+
+// إنشاء كائن Hammer للعمل على كامل الصفحة
+var hammer = new Hammer(document.body);
+
+// عند السحب من اليمين إلى اليسار (السابق)
+hammer.on('swipeleft', function () {
+    // السحب من اليمين إلى اليسار يقلب للصفحة السابقة
+    if (bookElement) {
+        $(bookElement).turn('previous');
+    }
+});
+
+// عند السحب من اليسار إلى اليمين (التالي)
+hammer.on('swiperight', function () {
+    // السحب من اليسار إلى اليمين يقلب للصفحة التالية
+    if (bookElement) {
+        $(bookElement).turn('next');
+    }
+});
+
     </script>
 </body>
 </html>
